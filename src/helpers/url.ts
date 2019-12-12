@@ -1,4 +1,4 @@
-import { isDate, isObject } from './util'
+import { isDate, isPlainObject } from './util'
 
 function encode(val: string): string {
   return (
@@ -39,7 +39,7 @@ export function buildURL(url: string, params?: any): string {
       if (isDate(val)) {
         // 日期类型的判断
         val = val.toISOString()
-      } else if (isObject(val)) {
+      } else if (isPlainObject(val)) {
         // Object类型的判断
         val = JSON.stringify(val)
       }
