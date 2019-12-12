@@ -8,12 +8,12 @@ export function isDate(val: any): val is Date {
   return toString.call(val) === '[object Date]'
 }
 
-// 判断是否是object类型
-export function isObject(val: any): val is Object {
-  return val !== null && typeof val === 'object'
-}
+// // 判断是否是object类型
+// export function isObject(val: any): val is Object {
+//   return val !== null && typeof val === 'object'
+// }
 
-// 判断是不是一个普通对象
+// 判断是不是一个object类型
 export function isPlainObject(val: any): val is Date {
   return toString.call(val) === '[object Object]'
 }
