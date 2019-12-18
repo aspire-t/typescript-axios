@@ -1,11 +1,11 @@
 import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from './types'
 import { rejects } from 'assert'
+import { parseHeaders } from './helpers/header'
 
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
-  const { data = null, url, method = 'get', headers, responseType } = config
-  const request = new XMLHttpRequest()
-
   return new Promise((resolve, rejects) => {
+    const { data = null, url, method = 'get', headers, responseType } = config
+    const request = new XMLHttpRequest()
     if (responseType) {
       request.responseType = responseType
     }
@@ -16,9 +16,10 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
       if (request.readyState !== 4) {
         return
       }
-
-      const responseHeaders = request.getAllResponseHeaders()
-      const responseData = responseType !== 'text' ? request.response : request.responseText
+      // 将headers解析成一个object
+      const responseHeaders = parseHeaders(request.getAllResponseHeaders())
+      const responseData =
+        responseType && responseType !== 'text' ? request.response : request.responseText
       const response: AxiosResponse = {
         data: responseData,
         status: request.status,
@@ -29,6 +30,7 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
       }
       resolve(response)
     }
+
     Object.keys(headers).forEach(name => {
       // 如果data是null，那这个headers是没有意义的
       if (data === null && name.toLowerCase() === 'content-type') {

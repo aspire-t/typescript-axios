@@ -14,6 +14,6 @@ export function isDate(val: any): val is Date {
 // }
 
 // 判断是不是一个object类型
-export function isPlainObject(val: any): val is Date {
+export function isPlainObject(val: any): val is Object {
   return toString.call(val) === '[object Object]'
 }

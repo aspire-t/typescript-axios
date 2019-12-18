@@ -19,9 +19,32 @@ export function processHeaders(headers: any, data: any): any {
 
   if (isPlainObject(data)) {
     if (headers && !headers['Content-Type']) {
-      headers['Content-Type'] = 'application/json;charset-utf-8'
+      headers['Content-Type'] = 'application/json;charset=utf-8'
     }
   }
 
   return headers
+}
+
+export function parseHeaders(headers: string): any {
+  let parsed = Object.create(null)
+  if (!headers) {
+    return parsed
+  }
+
+  // 用换行符分割
+  headers.split('\r\n').forEach(line => {
+    // 用：分割
+    let [key, val] = line.split(':')
+    key = key.trim().toLowerCase()
+    if (!key) {
+      return
+    }
+    if (val) {
+      val = val.trim()
+    }
+    parsed[key] = val
+  })
+
+  return parsed
 }
