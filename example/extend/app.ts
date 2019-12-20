@@ -62,7 +62,6 @@ function getUser<T>() {
     .catch(err => console.error(err))
 }
 
-
 async function test() {
   const user = await getUser<User>()
   if (user) {
