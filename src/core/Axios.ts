@@ -3,17 +3,15 @@ import dispatchRequest from './dispatchRequest'
 import InterceptorManager from './interceptorManager'
 import { response } from 'express'
 import { ResolvedFn } from './../types/index'
-
+import mergeConfig from './mergeConfig'
 interface Interceptors {
   request: InterceptorManager<AxiosRequestConfig>
   response: InterceptorManager<AxiosResponse>
 }
-
 interface PromiseChain<T> {
   resolved: ResolvedFn<T> | ((config: AxiosRequestConfig) => AxiosPromise)
   rejected?: RejectedFn
 }
-
 export default class Axios {
   interceptors: Interceptors
   defaults: AxiosRequestConfig
@@ -37,6 +35,8 @@ export default class Axios {
       // 这里表示，只传了一个参数，url是个object
       config = url
     }
+    // 合并配置
+    config = mergeConfig(this.defaults, config)
 
     const chain: PromiseChain<any>[] = [
       {
