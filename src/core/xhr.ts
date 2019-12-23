@@ -4,7 +4,7 @@ import { createError } from '../helpers/error'
 
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
   return new Promise((resolve, reject) => {
-    const { data = null, url, method = 'get', headers, responseType, timeout } = config
+    const { data = null, url, method = 'get', headers, responseType, timeout, cancelToken } = config
     const request = new XMLHttpRequest()
     if (responseType) {
       request.responseType = responseType
@@ -57,6 +57,16 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
         request.setRequestHeader(name, headers[name])
       }
     })
+
+    // cancelToken 使用场景，用来取消ajax请求的
+    if (cancelToken) {
+      // tslint:disable-next-line: no-floating-promises
+      cancelToken.promise.then(reason => {
+        // 取消padding状态，
+        request.abort()
+        reject(reason)
+      })
+    }
 
     request.send(data)
 
