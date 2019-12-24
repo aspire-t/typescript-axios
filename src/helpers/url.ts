@@ -1,5 +1,10 @@
 import { isDate, isPlainObject } from './util'
 
+interface URLOrigin {
+  protocol: string
+  host: string
+}
+
 function encode(val: string): string {
   return (
     encodeURIComponent(val) // encodeURIComponent() 函数可把字符串作为 URI 组件进行编码。
@@ -60,4 +65,25 @@ export function buildURL(url: string, params?: any): string {
   }
 
   return url
+}
+
+const urlParsingNode = document.createElement('a')
+const currentOrigin = resolveURL(window.location.href)
+
+function resolveURL(url: string): URLOrigin {
+  // 利用a标签这个对象，解析出protocol, host
+  // 这样就可以判断出 当前请求的url和当前页面的url是否是一样的，判断是否是同源请求
+  urlParsingNode.setAttribute('href', url)
+  const { protocol, host } = urlParsingNode
+
+  return {
+    protocol,
+    host
+  }
+}
+
+export function isURLSameOrigin(requestURL: string): boolean {
+  const parsedOrigin = resolveURL(requestURL)
+  // 这个就是满足同源策略
+  return parsedOrigin.protocol === currentOrigin.host
 }
