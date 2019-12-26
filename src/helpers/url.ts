@@ -1,4 +1,4 @@
-import { isDate, isPlainObject } from './util'
+import { isDate, isPlainObject, isURLSearchParams } from './util'
 
 interface URLOrigin {
   protocol: string
@@ -19,41 +19,54 @@ function encode(val: string): string {
   )
 }
 
-export function buildURL(url: string, params?: any): string {
+export function buildURL(
+  url: string,
+  params?: any,
+  paramsSerializer?: (params: any) => string
+): string {
   if (!params) {
     return url
   }
+  let serializedParams
 
-  const parts: string[] = []
-  Object.keys(params).forEach(key => {
-    const val = params[key]
-    if (val == null) {
-      return // foreach中的return不会跳出循环，它会执行下一次循环。Tips:foreach没法跳出，一定会执行完整个循环
-    }
+  if (paramsSerializer) {
+    serializedParams = paramsSerializer(params)
+  } else if (isURLSearchParams(params)) {
+    serializedParams = params.toString()
+  } else {
+    const parts: string[] = []
 
-    let values = []
-    // 对数组的处理，如果不是数组，将其变成一个数组
-    if (Array.isArray(val)) {
-      values = val
-      key += '[]'
-    } else {
-      values = [val]
-    }
-    // 所有的参数都转换成了数组，进行统一处理
-    values.forEach(val => {
-      if (isDate(val)) {
-        // 日期类型的判断
-        val = val.toISOString()
-      } else if (isPlainObject(val)) {
-        // Object类型的判断
-        val = JSON.stringify(val)
+    Object.keys(params).forEach(key => {
+      const val = params[key]
+      if (val == null) {
+        return // foreach中的return不会跳出循环，它会执行下一次循环。Tips:foreach没法跳出，一定会执行完整个循环
       }
-      parts.push(`${encode(key)}=${encode(val)}`)
-    })
-  })
 
-  // 将键值对拼成＆连接的方式
-  let serializedParams = parts.join('&')
+      let values = []
+      // 对数组的处理，如果不是数组，将其变成一个数组
+      if (Array.isArray(val)) {
+        values = val
+        key += '[]'
+      } else {
+        values = [val]
+      }
+      // 所有的参数都转换成了数组，进行统一处理
+      values.forEach(val => {
+        if (isDate(val)) {
+          // 日期类型的判断
+          val = val.toISOString()
+        } else if (isPlainObject(val)) {
+          // Object类型的判断
+          val = JSON.stringify(val)
+        }
+        parts.push(`${encode(key)}=${encode(val)}`)
+      })
+    })
+
+    // 将键值对拼成＆连接的方式
+    serializedParams = parts.join('&')
+  }
+
   if (serializedParams) {
     // 去掉hash标识
     const markIndex = url.indexOf('#')
@@ -63,8 +76,16 @@ export function buildURL(url: string, params?: any): string {
     // 判断url传过来的时候是否带有?没有问号加?有问号用&拼接
     url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams
   }
-
   return url
+}
+
+// 判断一个url地址是不是绝对路径
+export function isAbsoluteURL(url: string): boolean {
+  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url)
+}
+
+export function combineURL(baseURL: string, relativeURL?: string): string {
+  return relativeURL ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '') : baseURL
 }
 
 const urlParsingNode = document.createElement('a')
